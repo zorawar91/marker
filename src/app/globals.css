@@ -1,26 +1,108 @@
 @import "tailwindcss";
 
+/*
+  Marker design system — modern-SaaS (Linear/Vercel-flavored):
+  white surfaces on a light-slate page, indigo primary + teal accent,
+  crisp 1px borders, subtle shadows, tight geometric type (Geist).
+  Committed to a single light look; status colors carry meaning.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --bg: #f6f7f9; /* light slate page */
+  --surface: #ffffff; /* cards */
+  --surface-2: #f1f3f6; /* subtle fills */
+  --surface-3: #e9edf2; /* hover fills */
+  --border: #e3e7ec; /* crisp hairline */
+  --border-2: #d3d9e0; /* stronger divider */
+  --ink: #0f172a; /* slate-900 */
+  --ink-2: #4b5563; /* slate-600 */
+  --ink-3: #94a3b8; /* slate-400 */
+
+  --primary: #4f46e5; /* indigo-600 */
+  --primary-ink: #4338ca;
+  --primary-soft: #eef2ff; /* indigo-50 */
+  --accent: #0d9488; /* teal-600 */
+
+  /* Semantic status palette */
+  --ok: #059669;
+  --ok-bg: #ecfdf5;
+  --watch: #b45309;
+  --watch-bg: #fffbeb;
+  --concern: #e11d48;
+  --concern-bg: #fff1f2;
+  --improve: #0891b2;
+  --improve-bg: #ecfeff;
+  --neutral: #64748b;
+  --neutral-bg: #f1f5f9;
+
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.05);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em;
+}
+
+/* Status chip — variants set colors inline via CSS vars. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* Tabular numerals for all data figures. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle grid backdrop for the hero. */
+.grid-backdrop {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
 }
