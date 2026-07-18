@@ -1,30 +1,29 @@
 @import "tailwindcss";
 
 /*
-  Marker design system — modern-SaaS (Linear/Vercel-flavored):
-  white surfaces on a light-slate page, indigo primary + teal accent,
-  crisp 1px borders, subtle shadows, tight geometric type (Geist).
-  Committed to a single light look; status colors carry meaning.
+  Marker design system — modern-SaaS (Linear/Vercel-flavored).
+  Light is the default; dark is applied via :root[data-theme="dark"], which the
+  pre-hydration script in layout.tsx stamps from stored preference or the OS.
+  Status colors carry meaning and are tuned for both themes.
 */
 :root {
   color-scheme: light;
 
-  --bg: #f6f7f9; /* light slate page */
-  --surface: #ffffff; /* cards */
-  --surface-2: #f1f3f6; /* subtle fills */
-  --surface-3: #e9edf2; /* hover fills */
-  --border: #e3e7ec; /* crisp hairline */
-  --border-2: #d3d9e0; /* stronger divider */
-  --ink: #0f172a; /* slate-900 */
-  --ink-2: #4b5563; /* slate-600 */
-  --ink-3: #94a3b8; /* slate-400 */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --surface-3: #e9edf2;
+  --border: #e3e7ec;
+  --border-2: #d3d9e0;
+  --ink: #0f172a;
+  --ink-2: #4b5563;
+  --ink-3: #94a3b8;
 
-  --primary: #4f46e5; /* indigo-600 */
+  --primary: #4f46e5;
   --primary-ink: #4338ca;
-  --primary-soft: #eef2ff; /* indigo-50 */
-  --accent: #0d9488; /* teal-600 */
+  --primary-soft: #eef2ff;
+  --accent: #0d9488;
 
-  /* Semantic status palette */
   --ok: #059669;
   --ok-bg: #ecfdf5;
   --watch: #b45309;
@@ -39,6 +38,40 @@
   --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
   --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
   --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -2px rgb(15 23 42 / 0.05);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0b0e14;
+  --surface: #131824;
+  --surface-2: #1a2030;
+  --surface-3: #232b3d;
+  --border: #262e40;
+  --border-2: #354056;
+  --ink: #e6e9ef;
+  --ink-2: #9aa4b8;
+  --ink-3: #616d86;
+
+  --primary: #818cf8;
+  --primary-ink: #a5b0ff;
+  --primary-soft: #1e2540;
+  --accent: #2dd4bf;
+
+  --ok: #34d399;
+  --ok-bg: #10331f;
+  --watch: #fbbf24;
+  --watch-bg: #3a2a0d;
+  --concern: #fb7185;
+  --concern-bg: #3d1622;
+  --improve: #22d3ee;
+  --improve-bg: #103139;
+  --neutral: #94a3b8;
+  --neutral-bg: #1e2636;
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 6px 16px -4px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
 }
 
 @theme inline {
@@ -66,7 +99,6 @@ body {
   letter-spacing: -0.011em;
 }
 
-/* Status chip — variants set colors inline via CSS vars. */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -85,20 +117,28 @@ body {
   height: 6px;
   border-radius: 999px;
   background: currentColor;
+  flex: none;
 }
 
-/* Tabular numerals for all data figures. */
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle grid backdrop for the hero. */
 .grid-backdrop {
   background-image:
     linear-gradient(to right, var(--border) 1px, transparent 1px),
     linear-gradient(to bottom, var(--border) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+/* Hide horizontal scrollbar on the tab bar / table scroll containers. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media print {

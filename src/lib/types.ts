@@ -33,6 +33,7 @@ export interface Reading {
   refHigh: number | null; // in canonical unit
   printedRefText: string | null; // range exactly as printed
   status: Direction;
+  edited?: boolean; // true when the user manually corrected the value (P1)
 }
 
 /** One uploaded lab report after extraction. */

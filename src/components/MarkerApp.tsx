@@ -5,9 +5,11 @@ import { normalizeReport } from "@/lib/normalize";
 import { clearReports, loadReports, saveReports } from "@/lib/storage";
 import { sampleReports } from "@/lib/samples";
 import type { ExtractedReport, Report } from "@/lib/types";
+import { deriveStatus } from "@/lib/normalize";
 import { CompareView } from "./CompareView";
 import { Dashboard } from "./Dashboard";
 import { FullTable } from "./FullTable";
+import { ThemeToggle } from "./ThemeToggle";
 import { UploadZone, type FileStatus } from "./UploadZone";
 
 const DISCLAIMER =
@@ -91,6 +93,25 @@ export function MarkerApp() {
     setView("dashboard");
   };
 
+  // Inline value correction (P1): update one reading's canonical value, recompute
+  // its status against its range, and mark it edited. Trends recompute reactively.
+  const updateReading = (reportId: string, canonicalId: string, newValue: number) => {
+    setReports((prev) =>
+      prev.map((rep) =>
+        rep.id !== reportId
+          ? rep
+          : {
+              ...rep,
+              readings: rep.readings.map((r) =>
+                r.canonicalId !== canonicalId
+                  ? r
+                  : { ...r, value: newValue, status: deriveStatus(newValue, r.refLow, r.refHigh), edited: true },
+              ),
+            },
+      ),
+    );
+  };
+
   const deleteAll = () => {
     if (!window.confirm("Delete all reports and clear your data from this browser? This cannot be undone.")) return;
     clearReports();
@@ -113,33 +134,38 @@ export function MarkerApp() {
           <div className="flex items-center gap-2">
             <Logo />
             <span className="text-[15px] font-semibold tracking-tight text-[var(--ink)]">Marker</span>
-            <span className="ml-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--ink-3)]">
+            <span className="ml-0.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--ink-3)]">
               beta
             </span>
           </div>
-          {hasReports && (
-            <div className="flex items-center gap-1.5 text-sm">
-              <button
-                type="button"
-                onClick={() => setShowAdd((v) => !v)}
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-[var(--ink-2)] shadow-[var(--shadow-xs)] hover:bg-[var(--surface-2)]"
-              >
-                {showAdd ? "Close" : "+ Add reports"}
-              </button>
-              <button
-                type="button"
-                onClick={deleteAll}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--concern)] hover:bg-[var(--concern-bg)]"
-              >
-                Delete all
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 text-sm">
+            {hasReports && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowAdd((v) => !v)}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs font-medium text-[var(--ink-2)] shadow-[var(--shadow-xs)] hover:bg-[var(--surface-2)]"
+                >
+                  <span className="sm:hidden">+</span>
+                  <span className="hidden sm:inline">+ Add reports</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteAll}
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-[var(--concern)] hover:bg-[var(--concern-bg)]"
+                >
+                  <span className="sm:hidden">Delete</span>
+                  <span className="hidden sm:inline">Delete all</span>
+                </button>
+              </>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
         {/* Tab bar */}
         {hasReports && (
           <div className="border-t border-[var(--border)]">
-            <div className="mx-auto flex max-w-6xl gap-1 px-3">
+            <div className="no-scrollbar mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3">
               {tabs.map((t) => (
                 <button
                   key={t.id}
@@ -175,7 +201,7 @@ export function MarkerApp() {
               </div>
             )}
             {view === "dashboard" && <Dashboard reports={reports} />}
-            {view === "table" && <FullTable reports={reports} />}
+            {view === "table" && <FullTable reports={reports} onEdit={updateReading} />}
             {view === "compare" && canCompare && <CompareView reports={reports} />}
           </>
         )}

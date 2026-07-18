@@ -12,8 +12,18 @@ type SortKey = "panel" | "name" | "state";
  * Every extracted value in one sortable matrix (markers × report dates).
  * Doubles as the extraction-verification surface (P1 "Full table view"): each
  * cell is colored by its in/out-of-range status and dated to its source report.
+ * Cells are click-to-edit so one OCR error can be corrected without corrupting
+ * the trend (P1 "inline value correction") — edits update all views immediately.
  */
-export function FullTable({ reports }: { reports: Report[] }) {
+export function FullTable({
+  reports,
+  onEdit,
+}: {
+  reports: Report[];
+  onEdit?: (reportId: string, canonicalId: string, newValue: number) => void;
+}) {
+  const [editing, setEditing] = useState<{ reportId: string; canonicalId: string } | null>(null);
+  const [draft, setDraft] = useState("");
   const sorted = useMemo(() => sortReports(reports), [reports]);
   const series = useMemo(() => buildAllSeries(reports), [reports]);
   const [sortKey, setSortKey] = useState<SortKey>("panel");
@@ -39,13 +49,27 @@ export function FullTable({ reports }: { reports: Report[] }) {
   const cellColor = (status: Direction): string =>
     status === "high" || status === "low" ? DIRECTION_META[status].color : "var(--ink)";
 
+  const startEdit = (reportId: string, canonicalId: string, value: number) => {
+    if (!onEdit) return;
+    setEditing({ reportId, canonicalId });
+    setDraft(String(value));
+  };
+
+  const commit = () => {
+    if (!editing) return;
+    const n = parseFloat(draft);
+    if (Number.isFinite(n)) onEdit?.(editing.reportId, editing.canonicalId, n);
+    setEditing(null);
+  };
+
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-xs)]">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] p-4">
         <div>
           <h2 className="text-sm font-semibold text-[var(--ink)]">All extracted values</h2>
           <p className="mt-0.5 text-xs text-[var(--ink-2)]">
-            Every value across every report — colored by range, dated to its source. Use it to verify the extraction.
+            Every value across every report — colored by range, dated to its source.{" "}
+            {onEdit ? "Click any value to correct an extraction error." : "Use it to verify the extraction."}
           </p>
         </div>
         <div className="flex items-center gap-1 text-xs">
@@ -102,9 +126,46 @@ export function FullTable({ reports }: { reports: Report[] }) {
                   </td>
                   {sorted.map((r) => {
                     const reading = r.readings.find((x) => x.canonicalId === s.canonicalId);
+                    const isEditing = editing?.reportId === r.id && editing?.canonicalId === s.canonicalId;
+                    if (isEditing) {
+                      return (
+                        <td key={r.id} className="px-2 py-1.5 text-right">
+                          <input
+                            autoFocus
+                            inputMode="decimal"
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            onBlur={commit}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") commit();
+                              if (e.key === "Escape") setEditing(null);
+                            }}
+                            className="w-20 rounded-md border border-[var(--primary)] bg-[var(--surface)] px-2 py-1 text-right tnum text-[var(--ink)] outline-none"
+                          />
+                        </td>
+                      );
+                    }
                     return (
-                      <td key={r.id} className="px-3 py-2.5 text-right tnum" style={{ color: reading ? cellColor(reading.status) : "var(--ink-3)" }}>
-                        {reading ? formatValue(reading.value) : "—"}
+                      <td
+                        key={r.id}
+                        onClick={() => reading && startEdit(r.id, s.canonicalId, reading.value)}
+                        title={reading && onEdit ? "Click to correct this value" : undefined}
+                        className={`px-3 py-2.5 text-right tnum ${reading && onEdit ? "cursor-pointer hover:bg-[var(--surface-3)]" : ""}`}
+                        style={{ color: reading ? cellColor(reading.status) : "var(--ink-3)" }}
+                      >
+                        {reading ? (
+                          <span className="inline-flex items-center gap-1">
+                            {reading.edited && (
+                              <span
+                                className="h-1.5 w-1.5 rounded-full bg-[var(--primary)]"
+                                title="Edited"
+                              />
+                            )}
+                            {formatValue(reading.value)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                     );
                   })}
